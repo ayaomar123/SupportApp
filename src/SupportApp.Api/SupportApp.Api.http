@@ -1,6 +1,384 @@
 @HostAddress = http://localhost:5001
 
+
 GET {{HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+### =========================
+### Environment variables
+### =========================
+@scheme = http
+@host = localhost
+@port = 5001
+@baseUrl = {{scheme}}://{{host}}:{{port}}
+@authToken = Bearer YOUR_JWT_TOKEN_HERE
+
+# Common ids
+@ticketId = TCK-2025-000123
+@departmentId = 12
+@categoryId = 7
+@assigneeId = u-42
+@customerId = c-1
+@attachmentId = att-1
+@userId = u-99
+
+### Health (اختياري)
+GET {{baseUrl}}/weatherforecast
+Accept: application/json
+
+### =========================
+### AUTH (نماذج)
+### =========================
+# Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "P@ssw0rd!"
+}
+
+###
+# Get current user
+GET {{baseUrl}}/me
+Authorization: {{authToken}}
+Accept: application/json
+
+### =========================
+### TICKETS
+### =========================
+
+# List tickets with filters
+GET {{baseUrl}}/tickets?status=Assigned&departmentId={{departmentId}}&page=1&pageSize=20&sort=-createdAt
+Authorization: {{authToken}}
+Accept: application/json
+
+###
+# Get ticket by id
+GET {{baseUrl}}/tickets/{{ticketId}}
+Authorization: {{authToken}}
+Accept: application/json
+
+###
+# Create ticket (Customer) – JSON body
+POST {{baseUrl}}/tickets
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "AC not cooling",
+  "description": "Unit stops after 5 minutes. Makes loud noise.",
+  "customer": {
+    "name": "Jinan Zahaika",
+    "phone": "9705XXXXXXXX",
+    "address": "Ramallah - Al-Tira"
+  },
+  "departmentId": {{departmentId}},
+  "categoryId": {{categoryId}},
+  "priority": "Medium"
+}
+
+###
+# Patch ticket (partial update)
+PATCH {{baseUrl}}/tickets/{{ticketId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "priority": "High",
+  "categoryId": 8,
+  "title": "AC not cooling (urgent)"
+}
+
+###
+# Delete ticket (Admin)
+DELETE {{baseUrl}}/tickets/{{ticketId}}
+Authorization: {{authToken}}
+
+### =========================
+### TRIAGE & ASSIGNMENT (Supervisor)
+### =========================
+
+# Triage ticket: set dept/category/priority/SLA
+POST {{baseUrl}}/tickets/{{ticketId}}/triage
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "departmentId": {{departmentId}},
+  "categoryId": {{categoryId}},
+  "priority": "High",
+  "slaDueAt": "2025-08-30T12:00:00Z"
+}
+
+###
+# Assign ticket to agent
+POST {{baseUrl}}/tickets/{{ticketId}}/assign
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "assigneeId": "{{assigneeId}}"
+}
+
+###
+# Auto-assign (based on rules)
+POST {{baseUrl}}/tickets/{{ticketId}}/auto-assign
+Authorization: {{authToken}}
+
+### =========================
+### STATUS TRANSITIONS
+### =========================
+
+# Start work (Agent) -> InProgress
+POST {{baseUrl}}/tickets/{{ticketId}}/start
+Authorization: {{authToken}}
+
+###
+# Set waiting (Agent) -> WaitingCustomer/WaitingParts
+POST {{baseUrl}}/tickets/{{ticketId}}/wait
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "reason": "Waiting Customer",
+  "note": "Need access at 2 PM",
+  "expectedAt": "2025-08-27T10:00:00Z"
+}
+
+###
+# Propose resolve (Agent) -> ResolveProposed
+POST {{baseUrl}}/tickets/{{ticketId}}/propose-resolve
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "summary": "Replaced capacitor. Tested for 30 minutes OK."
+}
+
+###
+# Close (Supervisor) -> Closed & send rating link
+POST {{baseUrl}}/tickets/{{ticketId}}/close
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "closeNote": "Verified on site; working fine."
+}
+
+###
+# Reopen (Supervisor or Customer with approval)
+POST {{baseUrl}}/tickets/{{ticketId}}/reopen
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "reason": "Issue reappeared during the night."
+}
+
+### =========================
+### COMMENTS (Timeline)
+### =========================
+
+# List comments
+GET {{baseUrl}}/tickets/{{ticketId}}/comments
+Authorization: {{authToken}}
+Accept: application/json
+
+###
+# Add comment
+POST {{baseUrl}}/tickets/{{ticketId}}/comments
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "message": "Arriving at 2 PM.",
+  "visibility": "Internal"  // or "Public"
+}
+
+### =========================
+### ATTACHMENTS (Before/After/General)
+### =========================
+
+# Upload attachment (multipart/form-data)
+POST {{baseUrl}}/tickets/{{ticketId}}/attachments
+Authorization: {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type"
+
+after
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="caption"
+
+Outdoor unit after fix
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="after.jpg"
+Content-Type: image/jpeg
+
+< ./samples/after.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+# Delete attachment
+DELETE {{baseUrl}}/tickets/{{ticketId}}/attachments/{{attachmentId}}
+Authorization: {{authToken}}
+
+### =========================
+### RATING (CSAT)
+### =========================
+
+# Submit rating (via secure token or auth)
+POST {{baseUrl}}/tickets/{{ticketId}}/rating
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "score": 5,
+  "comment": "Great job, fast and clean!"
+}
+
+### =========================
+### REPORTS / KPIs
+### =========================
+
+# Summary report
+GET {{baseUrl}}/reports/summary?from=2025-08-01&to=2025-08-31&departmentId={{departmentId}}
+Authorization: {{authToken}}
+Accept: application/json
+
+###
+# Export report (CSV/PDF) – add query params as needed
+GET {{baseUrl}}/reports/export?from=2025-08-01&to=2025-08-31&status=Closed&departmentId={{departmentId}}&format=csv
+Authorization: {{authToken}}
+
+### =========================
+### MASTER DATA
+### =========================
+
+# Departments
+GET {{baseUrl}}/departments
+Authorization: {{authToken}}
+
+###
+POST {{baseUrl}}/departments
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "HVAC",
+  "code": "HVAC"
+}
+
+###
+PATCH {{baseUrl}}/departments/{{departmentId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "HVAC & Cooling"
+}
+
+###
+DELETE {{baseUrl}}/departments/{{departmentId}}
+Authorization: {{authToken}}
+
+###
+# Categories (optionally filter by department)
+GET {{baseUrl}}/categories?departmentId={{departmentId}}
+Authorization: {{authToken}}
+
+###
+# Status catalog (allowed states & transitions)
+GET {{baseUrl}}/status-catalog
+Authorization: {{authToken}}
+
+###
+# Priorities
+GET {{baseUrl}}/priorities
+Authorization: {{authToken}}
+
+###
+# Standard wait reasons
+GET {{baseUrl}}/wait-reasons
+Authorization: {{authToken}}
+
+### =========================
+### USERS & ROLES
+### =========================
+
+# List users by role/department
+GET {{baseUrl}}/users?role=Agent&departmentId={{departmentId}}
+Authorization: {{authToken}}
+
+###
+# Create user (Admin)
+POST {{baseUrl}}/users
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Maha",
+  "email": "maha@company.com",
+  "role": "Agent",
+  "departmentId": {{departmentId}},
+  "skills": ["HVAC", "Electrical"]
+}
+
+###
+# Update user
+PATCH {{baseUrl}}/users/{{userId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "role": "Supervisor",
+  "departmentId": {{departmentId}}
+}
+
+### =========================
+### NOTIFICATIONS & WEBHOOKS
+### =========================
+
+# My notifications (unread)
+GET {{baseUrl}}/notifications?unread=true
+Authorization: {{authToken}}
+
+###
+# Send notification using template
+POST {{baseUrl}}/tickets/{{ticketId}}/notify
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "channels": ["Email","SMS"],
+  "templateKey": "TICKET_ASSIGNED",
+  "to": ["{{customerId}}"],
+  "data": {
+    "ticketId": "{{ticketId}}",
+    "assignee": "Rasha"
+  }
+}
+
+###
+# Register webhook (optional, Admin)
+POST {{baseUrl}}/webhooks
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Ops Integration",
+  "url": "https://example.com/webhook",
+  "events": ["Ticket.Created","Ticket.Assigned","Ticket.Closed"]
+}
+
+### =========================
+### AUDIT LOG
+### =========================
+
+GET {{baseUrl}}/tickets/{{ticketId}}/audit
+Authorization: {{authToken}}
+Accept: application/json
+
