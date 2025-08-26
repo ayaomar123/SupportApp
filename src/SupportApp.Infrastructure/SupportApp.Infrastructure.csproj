@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\SupportApp.Application\SupportApp.Application.csproj" />
+    <ProjectReference Include="..\SupportApp.Domain\SupportApp.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

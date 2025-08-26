@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SupportApp.Application\SupportApp.Application.csproj" />
+    <ProjectReference Include="..\..\src\SupportApp.Domain\SupportApp.Domain.csproj" />
+    <ProjectReference Include="..\..\src\SupportApp.Infrastructure\SupportApp.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
