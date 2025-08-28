@@ -17,6 +17,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupportApp.Tests", "tests\SupportApp.Tests\SupportApp.Tests.csproj", "{35312E4E-C21B-4DEB-98DA-922749B6B192}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+		docker-compose.yml = docker-compose.yml
+		Dockerfile = Dockerfile
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,5 +105,8 @@ Global
 		{D66881CC-FD73-4635-B50B-3A8B03093643} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{446B3050-4CD6-4836-A64A-2D5969772B69} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{35312E4E-C21B-4DEB-98DA-922749B6B192} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {10610D59-A9CE-4F51-BCBA-C52B30208B95}
 	EndGlobalSection
 EndGlobal
