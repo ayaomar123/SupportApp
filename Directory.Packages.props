@@ -4,10 +4,12 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <!-- API Versioning -->
+      <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
+      <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="9.0.6" />
+      <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.6" />
+    
+    <!-- Documentation -->
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
-
-    <!-- Analyzers -->
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
 
     <!-- Test Libraries -->
@@ -16,7 +18,25 @@
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
 
-      <!-- MediatR -->
-      <PackageVersion Include="MediatR" Version="12.5.0" />
+    <!-- MediatR -->
+    <PackageVersion Include="MediatR" Version="12.5.0" />
+
+    <!-- FluentValidation -->
+     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
+     <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.1" />
+
+      <!-- EF Core -->
+      <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
+      <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
+      <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />
+      <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6" />
+      <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6" />
+      <!-- Infrastructure -->
+      <PackageVersion Include="Microsoft.Extensions.Caching.Hybrid" Version="9.6.0" />
+      <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.6" />
+      <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.6" />
+
+      <!-- Api -->
+      <PackageVersion Include="Scalar.AspNetCore" Version="2.5.3" />
   </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
-@HostAddress = http://localhost:5001
+@HostAddress = https://localhost:7093
 
 
-GET {{HostAddress}}/weatherforecast/
+GET {{HostAddress}}
 Accept: application/json
 
 ###
@@ -61,7 +61,7 @@ Authorization: {{authToken}}
 Accept: application/json
 
 ###
-# Create ticket (Customer) – JSON body
+# Create ticket (Client) – JSON body
 POST {{baseUrl}}/tickets
 Authorization: {{authToken}}
 Content-Type: application/json
@@ -136,13 +136,13 @@ POST {{baseUrl}}/tickets/{{ticketId}}/start
 Authorization: {{authToken}}
 
 ###
-# Set waiting (Agent) -> WaitingCustomer/WaitingParts
+# Set waiting (Agent) -> WaitingClient/WaitingParts
 POST {{baseUrl}}/tickets/{{ticketId}}/wait
 Authorization: {{authToken}}
 Content-Type: application/json
 
 {
-  "reason": "Waiting Customer",
+  "reason": "Waiting Client",
   "note": "Need access at 2 PM",
   "expectedAt": "2025-08-27T10:00:00Z"
 }
@@ -168,7 +168,7 @@ Content-Type: application/json
 }
 
 ###
-# Reopen (Supervisor or Customer with approval)
+# Reopen (Supervisor or Client with approval)
 POST {{baseUrl}}/tickets/{{ticketId}}/reopen
 Authorization: {{authToken}}
 Content-Type: application/json

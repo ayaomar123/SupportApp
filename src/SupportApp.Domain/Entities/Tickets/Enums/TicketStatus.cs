@@ -8,7 +8,7 @@ namespace SupportApp.Domain.Entities.Tickets.Enums
         UnderReview,
         Assigned,
         InProgress,
-        WaitingCustomer,
+        WaitingClient,
         Closed,
         Reopened
     }

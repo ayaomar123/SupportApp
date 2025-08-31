@@ -1,9 +1,10 @@
 ﻿using SupportApp.Domain.Common;
 using SupportApp.Domain.Entities.Tickets.Enums;
+using SupportApp.Domain.Entities.Tickets.Notes;
 
 namespace SupportApp.Domain.Entities.Tickets
 {
-    public class Ticket : Entity
+    public class Ticket : AuditableEntity
     {
         public Guid ClientId { get; private set; }
         public Guid CategoryId { get; private set; }
@@ -15,5 +16,8 @@ namespace SupportApp.Domain.Entities.Tickets
         public Guid? AssignedToId { get; private set; }
         public DateTime OpenedAt { get; private set; }
         public DateTime? ClosedAt { get; private set; }
+
+        private readonly List<TicketActivity> _activities = new();
+        public IReadOnlyCollection<TicketActivity> Activities => _activities;
     }
 }

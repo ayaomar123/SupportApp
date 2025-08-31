@@ -26,5 +26,8 @@ namespace SupportApp.Domain.Entities.Clients
 
         public static readonly Error CannotDeleteClientWithTickets =
             Error.Conflict("Client.CannotDelete", "Client cannot be deleted due to existing tickets.");
+
+        public static Error PasswordRequired =>
+           Error.Validation("Client_Password_Required", "Client password is required");
     }
 }
