@@ -1,6 +1,5 @@
 ﻿using System.Net.Mail;
 using System.Text.RegularExpressions;
-
 using SupportApp.Domain.Common;
 using SupportApp.Domain.Common.Results;
 using SupportApp.Domain.Entities.Tickets;
@@ -15,29 +14,28 @@ namespace SupportApp.Domain.Entities.Identity.User
 
     public class User : AuditableEntity
     {
-        public string? Name { get; private set; }
-        public string? Email { get; private set; }
-        public string? PasswordHash { get; private set; }
+        public string Name { get; private set; } = string.Empty;
+        public string Email { get; private set; } = string.Empty;
+        public string PasswordHash { get; private set; } = string.Empty;
         public string? PhoneNumber { get; private set; }
         public UserType UserType { get; private set; } = UserType.Client;
 
         private readonly List<Ticket> _tickets = [];
         public IEnumerable<Ticket> Tickets => _tickets.AsReadOnly();
 
-        public User()
-        {
-        }
+        private User() { } // EF Core
 
-        public User(Guid id, string? name, string? email, string? passwordHash, string? phoneNumber)
+        private User(Guid id, string name, string email, string passwordHash, string? phoneNumber, UserType userType)
             : base(id)
         {
             Name = name;
             Email = email;
             PasswordHash = passwordHash;
             PhoneNumber = phoneNumber;
+            UserType = userType;
         }
 
-        public static Result<User> Create(Guid id, string name, string email, string passwordHash, string? phoneNumber)
+        public static Result<User> Create(Guid id, string name, string email, string passwordHash, string? phoneNumber, UserType userType)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -68,7 +66,7 @@ namespace SupportApp.Domain.Entities.Identity.User
                 return UserErrors.PasswordRequired;
             }
 
-            return new User(id, name, email, passwordHash, phoneNumber);
+            return new User(id, name, email, passwordHash, phoneNumber, userType);
         }
     }
 }

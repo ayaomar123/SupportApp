@@ -1,6 +1,9 @@
 ﻿using MediatR;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+
 using SupportApp.Api.Requests.Categories;
 using SupportApp.Application.Features.Categories.Commands.CreateCategory;
 using SupportApp.Application.Features.Categories.Commands.RemoveCategory;
@@ -12,6 +15,7 @@ using SupportApp.Application.Features.Categories.Queries.GetCategories;
 namespace SupportApp.Api.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(Policy = "EmployeeOnly")]
     [ApiController]
     public class CategoriesController(ISender sender) : ApiController
     {

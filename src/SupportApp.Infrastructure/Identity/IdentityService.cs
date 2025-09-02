@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SupportApp.Application.Common.Interfaces;
 using SupportApp.Application.Features.Auth.Dtos;
 using SupportApp.Domain.Common.Results;
+using SupportApp.Domain.Entities.Identity;
 using SupportApp.Domain.Entities.Identity.RefreshToken;
 using SupportApp.Domain.Entities.Identity.User;
 
@@ -33,7 +34,8 @@ public sealed class IdentityService(
             request.Name,
             request.Email,
             passwordHash,
-            request.PhoneNumber);
+            request.PhoneNumber,
+            UserType.Client);
 
         if (userResult.IsError)
         {

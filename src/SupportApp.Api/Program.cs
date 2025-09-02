@@ -1,6 +1,7 @@
 ﻿using Microsoft.OpenApi.Models;
 
 using SupportApp.Infrastructure;
+using SupportApp.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +59,11 @@ builder.Services
     .AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var ct = new CancellationTokenSource().Token;
+    await DbSeeder.SeedAsync(scope.ServiceProvider, ct);
+}
 
 if (app.Environment.IsDevelopment())
 {

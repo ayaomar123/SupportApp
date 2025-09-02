@@ -51,7 +51,6 @@ namespace SupportApp.Infrastructure
                 return new UploadService(root);
             });
 
-            services.AddScoped<ApplicationDbContextInitialiser>();
 
             services.AddAuthentication(options =>
             {
