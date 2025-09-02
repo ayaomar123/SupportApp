@@ -1,15 +1,16 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+
 using SupportApp.Application.Common.Interfaces;
-using SupportApp.Application.Features.Identity;
-using SupportApp.Application.Features.Identity.Dtos;
+using SupportApp.Application.Features.Auth.Dtos;
 using SupportApp.Domain.Common.Results;
-using SupportApp.Domain.Identity;
+using SupportApp.Domain.Entities.Identity.RefreshToken;
 
 namespace SupportApp.Infrastructure.Identity;
 
@@ -32,50 +33,79 @@ public class TokenProvider(IConfiguration configuration, IAppDbContext context) 
 
     public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
     {
-        var tokenValidationParameters = new TokenValidationParameters
+        try
         {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]!)),
-            ValidateIssuer = true,
-            ValidIssuer = _configuration["JwtSettings:Issuer"],
-            ValidateAudience = true,
-            ValidAudience = _configuration["JwtSettings:Audience"],
-            ValidateLifetime = false, // Ignore token expiration
-            ClockSkew = TimeSpan.Zero
-        };
+            var key = _configuration["JwtSettings:Secret"]!;
+            var issuer = _configuration["JwtSettings:Issuer"];
+            var audience = _configuration["JwtSettings:Audience"];
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                ValidateIssuer = true,
+                ValidIssuer = issuer,
+                ValidateAudience = true,
+                ValidAudience = audience,
+                ValidateLifetime = false,
+                ClockSkew = TimeSpan.Zero
+            };
 
-        if (securityToken is not JwtSecurityToken jwtSecurityToken ||
-            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-        {
-            throw new SecurityTokenException("Invalid token.");
+            var handler = new JwtSecurityTokenHandler();
+            var principal = handler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new SecurityTokenException("Invalid token.");
+            }
+
+            return principal;
         }
-
-        return principal;
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     private async Task<Result<TokenResponse>> CreateAsync(AppUserDto user, CancellationToken ct = default)
     {
-        var jwtSettings = _configuration.GetSection("JwtSettings");
+        var jwtSection = _configuration.GetSection("JwtSettings");
 
-        var issuer = jwtSettings["Issuer"]!;
-        var audience = jwtSettings["Audience"]!;
-        var key = jwtSettings["Secret"]!;
-
-        var expires = DateTime.UtcNow.AddMinutes(int.Parse(jwtSettings["TokenExpirationInMinutes"]!));
+        var issuer = jwtSection["Issuer"]!;
+        var audience = jwtSection["Audience"]!;
+        var key = jwtSection["Secret"]!;
+        var expires = DateTime.UtcNow.AddMinutes(int.Parse(jwtSection["TokenExpirationInMinutes"]!));
 
         var claims = new List<Claim>
         {
-            new (JwtRegisteredClaimNames.Sub, user.UserId!),
-            new (JwtRegisteredClaimNames.Email, user.Email!),
+            new(JwtRegisteredClaimNames.Sub, user.UserId!),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(ClaimTypes.NameIdentifier, user.UserId!),
+            new(ClaimTypes.Email, user.Email!),
         };
 
-        foreach (var role in user.Roles)
+        if (!string.IsNullOrEmpty(user.Name))
         {
-            claims.Add(new(ClaimTypes.Role, role));
+            claims.Add(new(ClaimTypes.Name, user.Name));
         }
+
+        if (!string.IsNullOrEmpty(user.UserType))
+        {
+            claims.Add(new("userType", user.UserType));
+        }
+
+        if (user.Roles is not null)
+        {
+            foreach (var role in user.Roles)
+            {
+                claims.Add(new(ClaimTypes.Role, role));
+            }
+        }
+
+        var creds = new SigningCredentials(
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+            SecurityAlgorithms.HmacSha256Signature);
 
         var descriptor = new SecurityTokenDescriptor
         {
@@ -83,19 +113,18 @@ public class TokenProvider(IConfiguration configuration, IAppDbContext context) 
             Expires = expires,
             Issuer = issuer,
             Audience = audience,
-            SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-                SecurityAlgorithms.HmacSha256Signature),
+            SigningCredentials = creds
         };
 
-        var tokenHandler = new JwtSecurityTokenHandler();
+        var handler = new JwtSecurityTokenHandler();
+        var securityToken = handler.CreateToken(descriptor);
 
-        var securityToken = tokenHandler.CreateToken(descriptor);
+        // ✅ نظف التوكنات القديمة للمستخدم
+        await _context.RefreshTokens
+            .Where(rt => rt.UserId == user.UserId)
+            .ExecuteDeleteAsync(ct);
 
-        var oldRefreshTokens = await _context.RefreshTokens
-              .Where(rt => rt.UserId == user.UserId)
-              .ExecuteDeleteAsync(ct);
-
+        // ✅ أنشئ RefreshToken جديد
         var refreshTokenResult = RefreshToken.Create(
             Guid.NewGuid(),
             GenerateRefreshToken(),
@@ -110,15 +139,19 @@ public class TokenProvider(IConfiguration configuration, IAppDbContext context) 
         var refreshToken = refreshTokenResult.Value;
 
         _context.RefreshTokens.Add(refreshToken);
-
         await _context.SaveChangesAsync(ct);
 
-        return new TokenResponse
-        {
-            AccessToken = tokenHandler.WriteToken(securityToken),
-            RefreshToken = refreshToken.Token,
-            ExpiresOnUtc = expires
-        };
+        var response = new TokenResponse(
+            AccessToken: handler.WriteToken(securityToken),
+            RefreshToken: refreshToken.Token!,
+            ExpiresOnUtc: expires,
+            UserId: user.UserId!,
+            Email: user.Email!,
+            Name: user.Name ?? string.Empty,
+            UserType: user.UserType ?? string.Empty
+        );
+
+        return response;
     }
 
     private static string GenerateRefreshToken()

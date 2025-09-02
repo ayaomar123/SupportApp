@@ -1,17 +1,13 @@
-using SupportApp.Application.Features.Identity.Dtos;
+﻿using SupportApp.Application.Features.Auth.Dtos;
 using SupportApp.Domain.Common.Results;
 
 namespace SupportApp.Application.Common.Interfaces;
 
 public interface IIdentityService
 {
-    Task<bool> IsInRoleAsync(string userId, string role);
+    Task<Result<TokenResponse>> RegisterAsync(RegisterRequest request, CancellationToken ct = default);
 
-    Task<bool> AuthorizeAsync(string userId, string? policyName);
+    Task<Result<TokenResponse>> LoginAsync(LoginRequest request, CancellationToken ct = default);
 
-    Task<Result<AppUserDto>> AuthenticateAsync(string email, string password);
-
-    Task<Result<AppUserDto>> GetUserByIdAsync(string userId);
-
-    Task<string?> GetUserNameAsync(string userId);
+    Task<Result<TokenResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken ct = default);
 }

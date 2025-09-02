@@ -37,6 +37,6 @@
       <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.6" />
 
       <!-- Api -->
-      <PackageVersion Include="Scalar.AspNetCore" Version="2.5.3" />
+      <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.1" />
   </ItemGroup>
 </Project>

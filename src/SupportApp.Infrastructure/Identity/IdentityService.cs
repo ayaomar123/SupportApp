@@ -1,80 +1,116 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 using SupportApp.Application.Common.Interfaces;
-using SupportApp.Application.Features.Identity.Dtos;
+using SupportApp.Application.Features.Auth.Dtos;
 using SupportApp.Domain.Common.Results;
+using SupportApp.Domain.Entities.Identity.RefreshToken;
+using SupportApp.Domain.Entities.Identity.User;
 
 namespace SupportApp.Infrastructure.Identity;
 
-public class IdentityService(
-    UserManager<AppUser> userManager,
-    IUserClaimsPrincipalFactory<AppUser> userClaimsPrincipalFactory,
-    IAuthorizationService authorizationService) : IIdentityService
+public sealed class IdentityService(
+    IAppDbContext context,
+    ITokenProvider tokenProvider,
+    IPasswordHasher passwordHasher) : IIdentityService
 {
-    private readonly UserManager<AppUser> _userManager = userManager;
-    private readonly IUserClaimsPrincipalFactory<AppUser> _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
-    private readonly IAuthorizationService _authorizationService = authorizationService;
+    private readonly IAppDbContext _context = context;
+    private readonly ITokenProvider _tokenProvider = tokenProvider;
+    private readonly IPasswordHasher _passwordHasher = passwordHasher;
 
-    public async Task<bool> IsInRoleAsync(string userId, string role)
+    public async Task<Result<TokenResponse>> RegisterAsync(RegisterRequest request, CancellationToken ct = default)
     {
-        var user = await _userManager.FindByIdAsync(userId);
+        var exists = await _context.AppUsers.AnyAsync(u => u.Email == request.Email, ct);
 
-        return user != null && await _userManager.IsInRoleAsync(user, role);
-    }
-
-    public async Task<bool> AuthorizeAsync(string userId, string? policyName)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-
-        if (user == null)
+        if (exists)
         {
-            return false;
+            return UserErrors.EmailExists;
         }
 
-        var principal = await _userClaimsPrincipalFactory.CreateAsync(user);
+        var passwordHash = _passwordHasher.Hash(request.Password);
 
-        var result = await _authorizationService.AuthorizeAsync(principal, policyName!);
+        var userResult = User.Create(
+            Guid.NewGuid(),
+            request.Name,
+            request.Email,
+            passwordHash,
+            request.PhoneNumber);
 
-        return result.Succeeded;
+        if (userResult.IsError)
+        {
+            return userResult.Errors;
+        }
+
+        var user = userResult.Value;
+
+        _context.AppUsers.Add(user);
+        await _context.SaveChangesAsync(ct);
+
+        var userDto = new AppUserDto(
+            user.Id.ToString(),
+            user.Email!,
+            user.Name,
+            user.UserType.ToString(),
+            new List<string>()
+        );
+
+        return await _tokenProvider.GenerateJwtTokenAsync(userDto, ct);
     }
 
-    public async Task<Result<AppUserDto>> AuthenticateAsync(string email, string password)
+    public async Task<Result<TokenResponse>> LoginAsync(LoginRequest request, CancellationToken ct = default)
     {
-        var user = await _userManager.FindByEmailAsync(email);
+        var user = await _context.AppUsers
+            .FirstOrDefaultAsync(u => u.Email == request.Email, ct);
 
+        if (!_passwordHasher.Verify(request.Password, user!.PasswordHash!))
+        {
+            return UserErrors.PasswordOrEmailError;
+        }
+
+        var userDto = new AppUserDto(
+            user.Id.ToString(),
+            user.Email!,
+            user.Name,
+            user.UserType.ToString(),
+            new List<string>());
+
+        return await _tokenProvider.GenerateJwtTokenAsync(userDto, ct);
+    }
+
+    public async Task<Result<TokenResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken ct = default)
+    {
+        var principal = _tokenProvider.GetPrincipalFromExpiredToken(request.Token);
+        if (principal is null)
+        {
+            return RefreshTokenErrors.IdRequired;
+        }
+
+        var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return RefreshTokenErrors.UserIdRequired;
+        }
+
+        var refreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.UserId == userId && rt.Token == request.RefreshToken, ct);
+
+        if (refreshToken is null || refreshToken.ExpiresOnUtc <= DateTime.UtcNow)
+        {
+            return RefreshTokenErrors.ExpiryInvalid;
+        }
+
+        var user = await _context.AppUsers.FirstOrDefaultAsync(u => u.Id.ToString() == userId, ct);
         if (user is null)
         {
-            return Error.NotFound("User_Not_Found", $"User with email {UtilityService.MaskEmail(email)} not found");
+            return RefreshTokenErrors.UserIdRequired;
         }
 
-        if (!user.EmailConfirmed)
-        {
-            return Error.Conflict("Email_Not_Confirmed", $"email '{UtilityService.MaskEmail(email)}' not confirmed");
-        }
+        var userDto = new AppUserDto(
+            user.Id.ToString(),
+            user.Email!,
+            user.Name,
+            user.UserType.ToString(),
+            new List<string>());
 
-        if (!await _userManager.CheckPasswordAsync(user, password))
-        {
-            return Error.Conflict("Invalid_Login_Attempt", "Email / Password are incorrect");
-        }
-
-        return new AppUserDto(user.Id, user.Email!, await _userManager.GetRolesAsync(user), await _userManager.GetClaimsAsync(user));
-    }
-
-    public async Task<Result<AppUserDto>> GetUserByIdAsync(string userId)
-    {
-        var user = await _userManager.FindByIdAsync(userId) ?? throw new InvalidOperationException(nameof(userId));
-
-        var roles = await _userManager.GetRolesAsync(user);
-
-        var claims = await _userManager.GetClaimsAsync(user);
-
-        return new AppUserDto(user.Id, user.Email!, roles, claims);
-    }
-
-    public async Task<string?> GetUserNameAsync(string userId)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-
-        return user?.UserName;
+        return await _tokenProvider.GenerateJwtTokenAsync(userDto, ct);
     }
 }

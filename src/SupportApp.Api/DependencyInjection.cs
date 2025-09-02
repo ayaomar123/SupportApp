@@ -91,26 +91,21 @@ public static class DependencyInjection
 
     public static IApplicationBuilder UseCoreMiddlewares(this IApplicationBuilder app, IConfiguration configuration)
     {
-        // 1. Exception handling should be FIRST to catch all errors
-        app.UseExceptionHandler();
+        // app.UseExceptionHandler();
 
-        // 2. Status code pages for handling HTTP status codes
         app.UseStatusCodePages();
 
-        // 3. HTTPS redirection (before any other middleware that might generate URLs)
         app.UseHttpsRedirection();
 
-        // 5. CORS (before authentication/authorization)
         app.UseCors("employee");
 
-        // 7. Authentication (must come before authorization)
         app.UseAuthentication();
 
-        // 8. Authorization (must come after authentication)
         app.UseAuthorization();
 
-        // 9. Output caching (after auth to cache based on user context)
         app.UseOutputCache();
+
+        app.UseStaticFiles();
 
         return app;
     }

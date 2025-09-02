@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SupportApp.Domain.Entities.Employees;
 using SupportApp.Domain.Entities.Identity;
 using SupportApp.Infrastructure.Identity;
 
@@ -18,7 +17,7 @@ public class ApplicationDbContextInitialiser(
     private readonly UserManager<AppUser> _userManager = userManager;
     private readonly RoleManager<IdentityRole> _roleManager = roleManager;
 
-    public async Task InitialiseAsync()
+    /* public async Task InitialiseAsync()
     {
         try
         {
@@ -179,5 +178,5 @@ public static class InitialiserExtensions
         await initialiser.InitialiseAsync();
 
         await initialiser.SeedAsync();
-    }
+    }*/
 }

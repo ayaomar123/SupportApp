@@ -1,7 +1,6 @@
 namespace SupportApp.Domain.Entities.Identity;
-
-public enum Role
+public class Role
 {
-    Labor,
-    Manager
+    public const string Admin = "Admin";
+    public const string User = "User";
 }

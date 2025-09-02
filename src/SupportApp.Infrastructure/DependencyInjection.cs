@@ -1,6 +1,7 @@
 ﻿using System.Text;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+
 using SupportApp.Application.Common.Interfaces;
 using SupportApp.Infrastructure.Data;
 using SupportApp.Infrastructure.Data.Interceptors;
@@ -36,6 +38,18 @@ namespace SupportApp.Infrastructure
 
             services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
+
+            services.AddScoped<IFileStorage>(sp =>
+            {
+                var env = sp.GetRequiredService<IWebHostEnvironment>();
+
+                var webRoot = env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot");
+                var root = Path.Combine(webRoot, "uploads");
+
+                Directory.CreateDirectory(root);
+
+                return new UploadService(root);
+            });
 
             services.AddScoped<ApplicationDbContextInitialiser>();
 
@@ -74,14 +88,9 @@ namespace SupportApp.Infrastructure
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>();
 
-            // services.AddScoped<IAuthorizationHandler, LaborAssignedHandler>();
-
-            // services.AddAuthorizationBuilder()
-                //  .AddPolicy("ManagerOnly", policy => policy.RequireRole("Manager"))
-               //   .AddPolicy("SelfScopedWorkOrderAccess", policy =>
-                 //   policy.Requirements.Add(new LaborAssignedRequirement()));
-
             services.AddTransient<IIdentityService, IdentityService>();
+
+            services.AddTransient<IPasswordHasher, PasswordHasher>();
 
             services.AddHybridCache(options => options.DefaultEntryOptions = new HybridCacheEntryOptions
             {
@@ -89,11 +98,9 @@ namespace SupportApp.Infrastructure
                 LocalCacheExpiration = TimeSpan.FromSeconds(30),
             });
 
-            // services.AddScoped<IWorkOrderPolicy, WorkOrderPolicy>();
             services.AddScoped<ITokenProvider, TokenProvider>();
             services.AddScoped<INotificationService, NotificationService>();
 
-            // services.AddHostedService<OverdueBookingCleanupService>();
             return services;
         }
     }

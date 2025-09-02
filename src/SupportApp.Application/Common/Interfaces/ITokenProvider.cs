@@ -1,7 +1,5 @@
 using System.Security.Claims;
-
-using SupportApp.Application.Features.Identity;
-using SupportApp.Application.Features.Identity.Dtos;
+using SupportApp.Application.Features.Auth.Dtos;
 using SupportApp.Domain.Common.Results;
 
 namespace SupportApp.Application.Common.Interfaces;
