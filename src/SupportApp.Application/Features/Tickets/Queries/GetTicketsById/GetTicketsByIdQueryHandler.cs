@@ -18,6 +18,10 @@ namespace SupportApp.Application.Features.Tickets.Queries.GetTicketsById
                 .Include(c => c.Category)
                 .Include(c => c.ReportedBy)
                 .Include(c => c.Assignee)
+                .Include(c => c.Activities)
+                    .ThenInclude(a => a.User)
+                .Include(c => c.Activities)
+                    .ThenInclude(a => a.Attachments)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == query.Id, ct);
 

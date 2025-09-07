@@ -93,5 +93,25 @@ namespace SupportApp.Domain.Entities.Tickets.Activities
                 _attachments.Add(result.Value);
             }
         }
+
+        public string GetMessage()
+        {
+            return Type switch
+            {
+                ActivityType.Created => "Ticket has been created.",
+
+                ActivityType.Comment => $"Comment: {Description}",
+
+                ActivityType.InternalNote => $"Internal note: {Description}",
+
+                ActivityType.Attachment => "File attached.",
+
+                ActivityType.StatusChanged => $"Status changed from {OldStatus} to {NewStatus}",
+
+                _ => "Unknown activity"
+            };
+        }
+
+        public override string ToString() => GetMessage();
     }
 }

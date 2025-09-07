@@ -16,6 +16,6 @@ namespace SupportApp.Application.Features.Tickets.Dtos
         public AssigneeDto? Assignee { get; set; }
         public DateTime OpenedAt { get; set; }
         public DateTime ClosedAt { get; set; }
-        public TicketActivityDto? Activities { get; set; }
+        public List<TicketActivityDto> Activities { get; set; } = [];
     }
 }

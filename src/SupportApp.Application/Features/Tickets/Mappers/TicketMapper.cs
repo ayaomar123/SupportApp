@@ -1,6 +1,7 @@
 ﻿using SupportApp.Application.Features.Categories.Dtos;
 using SupportApp.Application.Features.Tickets.Dtos;
 using SupportApp.Domain.Entities.Tickets;
+using SupportApp.Domain.Entities.Tickets.Activities;
 
 namespace SupportApp.Application.Features.Tickets.Mappers
 {
@@ -34,14 +35,37 @@ namespace SupportApp.Application.Features.Tickets.Mappers
                 Description = entity.Description,
                 Priority = entity.Priority,
                 Status = entity.Status,
-                // OpenedAt = (DateTime)entity.OpenedAt!,
-                // ClosedAt = (DateTime)entity.ClosedAt!,
+                OpenedAt = entity.OpenedAt,
+                ClosedAt = entity.ClosedAt is null ? default : (DateTime)entity.ClosedAt,
+                Activities = entity.Activities
+                    .Select(a => a.ToActivityDto())
+                    .ToList()
             };
         }
 
         public static List<TicketDto> ToDtos(this IEnumerable<Ticket> entities)
         {
             return [.. entities.Select(e => e.ToDto())];
+        }
+
+        public static TicketActivityDto ToActivityDto(this TicketActivity entity)
+        {
+            ArgumentNullException.ThrowIfNull(entity);
+
+            return new TicketActivityDto
+            {
+                Id = entity.Id,
+                Type = entity.Type,
+                Note = entity.ToString(),
+                Description = entity.Description,
+                Creator = entity.User,
+                Attachments = entity.Attachments
+                    .Select(a => new TicketActivityAttachmentDto
+                    {
+                        Id = a.Id,
+                    })
+                    .ToList(),
+            };
         }
 
     }
