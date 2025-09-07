@@ -1,6 +1,5 @@
 ﻿using SupportApp.Application.Features.Categories.Dtos;
 using SupportApp.Application.Features.Tickets.Dtos;
-using SupportApp.Domain.Entities.Tickets;
 using SupportApp.Domain.Entities.Tickets.Activities;
 
 namespace SupportApp.Application.Features.Tickets.Mappers
@@ -15,16 +14,16 @@ namespace SupportApp.Application.Features.Tickets.Mappers
             {
                 Id = entity.Id,
                 Number = entity.Number,
+                Category = entity.Category is null ? null : new CategoryMiniDto
+                {
+                    Id = entity.Category.Id,
+                    Title = entity.Category.Title,
+                },
                 Owner = entity.ReportedBy is null ? null : new CreatorDto
                 {
                     Id = entity.ReportedByUserId,
                     Name = entity.ReportedBy.Name,
                     Type = entity.ReportedBy.UserType,
-                },
-                Category = entity.Category is null ? null : new CategoryMiniDto
-                {
-                    Id = entity.Category.Id,
-                    Title = entity.Category.Title,
                 },
                 Assignee = entity.Assignee is null ? null : new AssigneeDto
                 {
@@ -36,6 +35,8 @@ namespace SupportApp.Application.Features.Tickets.Mappers
                 Priority = entity.Priority,
                 Status = entity.Status,
                 OpenedAt = entity.OpenedAt,
+                CreatedAt = entity.CreatedAtUtc,
+                UpdatedAt = entity.LastModifiedUtc,
                 ClosedAt = entity.ClosedAt is null ? default : (DateTime)entity.ClosedAt,
                 Activities = entity.Activities
                     .Select(a => a.ToActivityDto())
@@ -58,11 +59,18 @@ namespace SupportApp.Application.Features.Tickets.Mappers
                 Type = entity.Type,
                 Note = entity.ToString(),
                 Description = entity.Description,
-                Creator = entity.User,
+                Creator = entity.User is null ? null : new CreatorDto
+                {
+                    Id = entity.CreatedByUserId,
+                    Name = entity.User!.Name,
+                    Type = entity.UserType,
+                },
+                CreatedAtUtc = entity.CreatedAtUtc,
                 Attachments = entity.Attachments
                     .Select(a => new TicketActivityAttachmentDto
                     {
                         Id = a.Id,
+                        File = a.File
                     })
                     .ToList(),
             };

@@ -19,7 +19,6 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
         b.Property(c => c.OpenedAt).IsRequired();
         b.Property(c => c.ClosedAt).IsRequired(false);
 
-        // ⬇⬇ أهم سطرين: هذا يمنع EF من اختراع ReportedById
         b.HasOne(t => t.ReportedBy)
          .WithMany(u => u.ReportedTickets)
          .HasForeignKey(t => t.ReportedByUserId)
