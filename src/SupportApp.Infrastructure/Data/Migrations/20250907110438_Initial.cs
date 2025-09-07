@@ -230,8 +230,7 @@ namespace SupportApp.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OwnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OwnerId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ReportedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AssignedToId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Number = table.Column<int>(type: "int", nullable: false, defaultValueSql: "NEXT VALUE FOR shared.TicketNumbers"),
@@ -241,6 +240,7 @@ namespace SupportApp.Infrastructure.Data.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     OpenedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ClosedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastModifiedUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -257,14 +257,14 @@ namespace SupportApp.Infrastructure.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
-                        name: "FK_Tickets_AppUsers_OwnerId",
-                        column: x => x.OwnerId,
+                        name: "FK_Tickets_AppUsers_ReportedByUserId",
+                        column: x => x.ReportedByUserId,
                         principalTable: "AppUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Tickets_AppUsers_OwnerId1",
-                        column: x => x.OwnerId1,
+                        name: "FK_Tickets_AppUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AppUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -418,14 +418,14 @@ namespace SupportApp.Infrastructure.Data.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tickets_OwnerId_Status",
+                name: "IX_Tickets_ReportedByUserId_Status",
                 table: "Tickets",
-                columns: new[] { "OwnerId", "Status" });
+                columns: new[] { "ReportedByUserId", "Status" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tickets_OwnerId1",
+                name: "IX_Tickets_UserId",
                 table: "Tickets",
-                column: "OwnerId1");
+                column: "UserId");
         }
 
         /// <inheritdoc />

@@ -12,7 +12,7 @@ using SupportApp.Infrastructure.Data;
 namespace SupportApp.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250907100441_Initial")]
+    [Migration("20250907110438_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -252,7 +252,7 @@ namespace SupportApp.Infrastructure.Data.Migrations
                     b.HasIndex("PhoneNumber")
                         .IsUnique();
 
-                    b.ToTable("AppUsers");
+                    b.ToTable("AppUsers", (string)null);
                 });
 
             modelBuilder.Entity("SupportApp.Domain.Entities.Tickets.Activities.TicketActivity", b =>
@@ -383,78 +383,6 @@ namespace SupportApp.Infrastructure.Data.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("SupportApp.Domain.Entities.Tickets.Ticket", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("AssignedToId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("ClosedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1500)
-                        .HasColumnType("nvarchar(1500)");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("Number")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValueSql("NEXT VALUE FOR shared.TicketNumbers");
-
-                    b.Property<DateTime>("OpenedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("OwnerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("OwnerId1")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Priority")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.HasKey("Id");
-
-                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
-
-                    b.HasIndex("AssignedToId");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("OwnerId1");
-
-                    b.HasIndex("OwnerId", "Status");
-
-                    b.ToTable("Tickets");
-                });
-
             modelBuilder.Entity("SupportApp.Infrastructure.Identity.AppUser", b =>
                 {
                     b.Property<string>("Id")
@@ -523,6 +451,78 @@ namespace SupportApp.Infrastructure.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Ticket", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("AssignedToId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1500)
+                        .HasColumnType("nvarchar(1500)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Number")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValueSql("NEXT VALUE FOR shared.TicketNumbers");
+
+                    b.Property<DateTime>("OpenedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ReportedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("AssignedToId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("ReportedByUserId", "Status");
+
+                    b.ToTable("Tickets");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -582,7 +582,7 @@ namespace SupportApp.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SupportApp.Domain.Entities.Tickets.Ticket", "Ticket")
+                    b.HasOne("Ticket", "Ticket")
                         .WithMany("Activities")
                         .HasForeignKey("TicketId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -604,7 +604,7 @@ namespace SupportApp.Infrastructure.Data.Migrations
                     b.Navigation("TicketActivity");
                 });
 
-            modelBuilder.Entity("SupportApp.Domain.Entities.Tickets.Ticket", b =>
+            modelBuilder.Entity("Ticket", b =>
                 {
                     b.HasOne("SupportApp.Domain.Entities.Identity.User.User", "Assignee")
                         .WithMany("AssignedTickets")
@@ -617,28 +617,28 @@ namespace SupportApp.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SupportApp.Domain.Entities.Identity.User.User", null)
-                        .WithMany("Tickets")
-                        .HasForeignKey("OwnerId")
+                    b.HasOne("SupportApp.Domain.Entities.Identity.User.User", "ReportedBy")
+                        .WithMany("ReportedTickets")
+                        .HasForeignKey("ReportedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SupportApp.Domain.Entities.Identity.User.User", "Owner")
-                        .WithMany("OwnedTickets")
-                        .HasForeignKey("OwnerId1");
+                    b.HasOne("SupportApp.Domain.Entities.Identity.User.User", null)
+                        .WithMany("Tickets")
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Assignee");
 
                     b.Navigation("Category");
 
-                    b.Navigation("Owner");
+                    b.Navigation("ReportedBy");
                 });
 
             modelBuilder.Entity("SupportApp.Domain.Entities.Identity.User.User", b =>
                 {
                     b.Navigation("AssignedTickets");
 
-                    b.Navigation("OwnedTickets");
+                    b.Navigation("ReportedTickets");
 
                     b.Navigation("Tickets");
                 });
@@ -648,7 +648,7 @@ namespace SupportApp.Infrastructure.Data.Migrations
                     b.Navigation("Attachments");
                 });
 
-            modelBuilder.Entity("SupportApp.Domain.Entities.Tickets.Ticket", b =>
+            modelBuilder.Entity("Ticket", b =>
                 {
                     b.Navigation("Activities");
                 });

@@ -7,7 +7,6 @@ using SupportApp.Application.Common.Interfaces;
 using SupportApp.Domain.Common;
 using SupportApp.Domain.Entities.Identity.RefreshToken;
 using SupportApp.Domain.Entities.Identity.User;
-using SupportApp.Domain.Entities.Tickets;
 using SupportApp.Domain.Entities.Tickets.Activities;
 using SupportApp.Domain.Entities.Tickets.Attachments;
 using SupportApp.Domain.Entities.Tickets.Categories;

@@ -31,7 +31,7 @@ namespace SupportApp.Application.Features.Tickets.Commands.CreateTicket
             var assinee = await context.AppUsers.OrderBy(u => Guid.NewGuid()).FirstOrDefaultAsync(ct);
 
             var createResult = Ticket.Create(
-               creatorId: appUserId,
+               reporterId: appUserId,
                categoryId: request.CategoryId,
                title: request.Title,
                description: request.Description,

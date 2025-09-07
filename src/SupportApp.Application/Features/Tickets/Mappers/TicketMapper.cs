@@ -14,11 +14,11 @@ namespace SupportApp.Application.Features.Tickets.Mappers
             {
                 Id = entity.Id,
                 Number = entity.Number,
-                Owner = entity.Owner is null ? null : new CreatorDto
+                Owner = entity.ReportedBy is null ? null : new CreatorDto
                 {
-                    Id = entity.OwnerId,
-                    Name = entity.Owner.Name,
-                    Type = entity.Owner.UserType,
+                    Id = entity.ReportedByUserId,
+                    Name = entity.ReportedBy.Name,
+                    Type = entity.ReportedBy.UserType,
                 },
                 Category = entity.Category is null ? null : new CategoryMiniDto
                 {

@@ -1,60 +1,48 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SupportApp.Domain.Entities.Tickets;
+using SupportApp.Domain.Entities.Identity.User;
 
-namespace SupportApp.Infrastructure.Data.Configurations
+public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
 {
-    public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
+    public void Configure(EntityTypeBuilder<Ticket> b)
     {
-        public void Configure(EntityTypeBuilder<Ticket> builder)
-        {
-            builder.HasKey(c => c.Id).IsClustered(false);
+        b.HasKey(c => c.Id).IsClustered(false);
 
-            builder.Property(c => c.OwnerId).IsRequired();
-            builder.Property(c => c.CategoryId).IsRequired();
+        b.Property(c => c.ReportedByUserId).IsRequired();
+        b.Property(c => c.AssignedToId).IsRequired(false);
+        b.Property(c => c.CategoryId).IsRequired();
 
-            builder.Property(c => c.Number).IsRequired();
-            builder.Property(c => c.Title).IsRequired().HasMaxLength(150);
-            builder.Property(c => c.Description).IsRequired().HasMaxLength(1500);
-            builder.Property(c => c.Priority).IsRequired();
-            builder.Property(c => c.Status).IsRequired();
+        b.Property(c => c.Title).IsRequired().HasMaxLength(150);
+        b.Property(c => c.Description).IsRequired().HasMaxLength(1500);
+        b.Property(c => c.Priority).IsRequired();
+        b.Property(c => c.Status).IsRequired();
+        b.Property(c => c.OpenedAt).IsRequired();
+        b.Property(c => c.ClosedAt).IsRequired(false);
 
-            builder.Property(c => c.AssignedToId).IsRequired(false);
-            builder.Property(c => c.OpenedAt).IsRequired();
-            builder.Property(c => c.ClosedAt).IsRequired(false);
+        // ⬇⬇ أهم سطرين: هذا يمنع EF من اختراع ReportedById
+        b.HasOne(t => t.ReportedBy)
+         .WithMany(u => u.ReportedTickets)
+         .HasForeignKey(t => t.ReportedByUserId)
+         .OnDelete(DeleteBehavior.Restrict);
 
-            // ===== العلاقات =====
+        b.HasOne(t => t.Assignee)
+         .WithMany(u => u.AssignedTickets)
+         .HasForeignKey(t => t.AssignedToId)
+         .OnDelete(DeleteBehavior.SetNull);
 
-            builder.HasOne(t => t.Owner)
-               .WithMany(u => u.OwnedTickets)      // إن أضفت inverse nav؛ وإلا .WithMany()
-               .HasForeignKey(t => t.OwnerId)
-               .OnDelete(DeleteBehavior.Restrict)
-               .IsRequired();
+        b.HasOne(t => t.Category)
+         .WithMany()
+         .HasForeignKey(t => t.CategoryId)
+         .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(t => t.Assignee)
-                   .WithMany(u => u.AssignedTickets)   // أو .WithMany() إذا ما عندك inverse
-                   .HasForeignKey(t => t.AssignedToId)
-                   .OnDelete(DeleteBehavior.SetNull)
-                   .IsRequired(false);
+        b.HasMany(c => c.Activities)
+         .WithOne(a => a.Ticket)
+         .HasForeignKey(a => a.TicketId)
+         .OnDelete(DeleteBehavior.Cascade);
 
-            // Category
-            builder.HasOne(t => t.Category)
-                   .WithMany()
-                   .HasForeignKey(t => t.CategoryId)
-                   .OnDelete(DeleteBehavior.Restrict);
+        b.Navigation(c => c.Activities).UsePropertyAccessMode(PropertyAccessMode.Field);
 
-            // Activities
-            builder.HasMany(c => c.Activities)
-                   .WithOne(a => a.Ticket)
-                   .HasForeignKey(a => a.TicketId)
-                   .OnDelete(DeleteBehavior.Cascade);
-
-            builder.Navigation(c => c.Activities)
-                   .UsePropertyAccessMode(PropertyAccessMode.Field);
-
-            // فهارس
-            builder.HasIndex(t => t.CategoryId);
-            builder.HasIndex(t => new { t.OwnerId, t.Status });
-        }
+        b.HasIndex(t => new { t.ReportedByUserId, t.Status });
+        b.HasIndex(t => t.CategoryId);
     }
 }

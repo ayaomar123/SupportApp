@@ -16,7 +16,7 @@ namespace SupportApp.Application.Features.Tickets.Queries.GetTicketsById
             var ticket = await context
                 .Tickets
                 .Include(c => c.Category)
-                .Include(c => c.Owner)
+                .Include(c => c.ReportedBy)
                 .Include(c => c.Assignee)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == query.Id, ct);

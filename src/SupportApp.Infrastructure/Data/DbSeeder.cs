@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SupportApp.Application.Common.Interfaces;
 using SupportApp.Domain.Entities.Identity.User;
-using SupportApp.Domain.Entities.Tickets;
 using SupportApp.Domain.Entities.Tickets.Activities;
 using SupportApp.Domain.Entities.Tickets.Attachments;
 using SupportApp.Domain.Entities.Tickets.Categories;
@@ -61,7 +60,7 @@ namespace SupportApp.Infrastructure.Data
 
 
                 var ticketResult = Ticket.Create(
-                    creatorId: clientResult.Value.Id,
+                    reporterId: clientResult.Value.Id,
                     categoryId: categoriesToSeed[0].Value.Id,
                     title: "Sample Ticket",
                     description: "This is a sample ticket description.",

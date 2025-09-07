@@ -12,6 +12,8 @@ namespace SupportApp.Infrastructure.Data.Configurations
         {
             builder.HasKey(c => c.Id).IsClustered(false);
 
+            builder.ToTable("AppUsers");
+
             builder.Property(c => c.Name)
                .IsRequired()
                .HasMaxLength(150);
@@ -32,7 +34,7 @@ namespace SupportApp.Infrastructure.Data.Configurations
             builder.Property(c => c.PasswordHash)
                    .HasMaxLength(150);
 
-            builder.HasMany(c => c.Tickets).WithOne().HasForeignKey(v => v.OwnerId);
+            builder.HasMany(c => c.Tickets).WithOne().HasForeignKey(v => v.ReportedByUserId);
 
             builder.Navigation(c => c.Tickets)
            .UsePropertyAccessMode(PropertyAccessMode.Field);
