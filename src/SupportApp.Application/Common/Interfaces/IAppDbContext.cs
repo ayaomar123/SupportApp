@@ -3,9 +3,9 @@
 using SupportApp.Domain.Entities.Identity.RefreshToken;
 using SupportApp.Domain.Entities.Identity.User;
 using SupportApp.Domain.Entities.Tickets;
+using SupportApp.Domain.Entities.Tickets.Activities;
 using SupportApp.Domain.Entities.Tickets.Attachments;
 using SupportApp.Domain.Entities.Tickets.Categories;
-using SupportApp.Domain.Entities.Tickets.Notes;
 
 namespace SupportApp.Application.Common.Interfaces
 {
@@ -16,7 +16,7 @@ namespace SupportApp.Application.Common.Interfaces
         public DbSet<Ticket> Tickets { get; }
         public DbSet<Category> Categories { get; }
         public DbSet<TicketActivity> TicketActivities { get; }
-        public DbSet<ActivityAttachment> ActivityAttachments { get; }
+        public DbSet<TicketActivityAttachment> TicketActivityAttachments { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }

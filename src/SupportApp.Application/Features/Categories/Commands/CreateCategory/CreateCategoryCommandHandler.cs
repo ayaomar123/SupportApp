@@ -1,6 +1,4 @@
 ﻿using MediatR;
-using Microsoft.Extensions.Caching.Hybrid;
-using Microsoft.Extensions.Logging;
 using SupportApp.Application.Common.Interfaces;
 using SupportApp.Application.Features.Categories.Dtos;
 using SupportApp.Application.Features.Categories.Mappers;
@@ -11,8 +9,6 @@ namespace SupportApp.Application.Features.Categories.Commands.CreateCategory
 {
     public class CreateCategoryCommandHandler
         (IAppDbContext context,
-        ILogger<CreateCategoryCommandHandler> logger,
-        HybridCache cache,
         IFileStorage file
         ) : IRequestHandler<CreateCategoryCommand, Result<CategoryDto>>
     {
@@ -35,11 +31,7 @@ namespace SupportApp.Application.Features.Categories.Commands.CreateCategory
 
             await context.SaveChangesAsync(ct);
 
-            await cache.RemoveByTagAsync("client", ct);
-
             var category = createResult.Value;
-
-            logger.LogInformation("Catgeory created successfully. Id: {id}", createResult.Value.Id);
 
             return category.ToDto();
         }

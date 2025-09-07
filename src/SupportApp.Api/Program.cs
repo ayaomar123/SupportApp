@@ -52,7 +52,6 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("userType", "Client"));
 });
 
-
 builder.Services
     .AddPresentation(builder.Configuration)
     .AddApplication()

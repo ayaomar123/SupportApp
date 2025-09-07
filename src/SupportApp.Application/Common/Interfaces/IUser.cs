@@ -1,7 +1,10 @@
-﻿namespace SupportApp.Application.Common.Interfaces
+using SupportApp.Domain.Entities.Identity.User;
+
+namespace SupportApp.Application.Common.Interfaces;
+
+public interface IUser
 {
-    public interface IUser
-    {
-        string? Id { get; }
-    }
+    string? Id { get; }
+
+    UserType? UserType { get; }
 }

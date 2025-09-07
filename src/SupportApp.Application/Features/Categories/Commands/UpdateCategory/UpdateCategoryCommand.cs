@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-using SupportApp.Application.Features.Categories.Dtos;
+using SupportApp.Application.Common;
 using SupportApp.Domain.Common.Results;
 using SupportApp.Domain.Entities.Tickets.Enums;
 

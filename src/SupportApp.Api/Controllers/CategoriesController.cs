@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 
 using SupportApp.Api.Requests.Categories;
+using SupportApp.Application.Common;
 using SupportApp.Application.Features.Categories.Commands.CreateCategory;
 using SupportApp.Application.Features.Categories.Commands.RemoveCategory;
 using SupportApp.Application.Features.Categories.Commands.UpdateCategory;

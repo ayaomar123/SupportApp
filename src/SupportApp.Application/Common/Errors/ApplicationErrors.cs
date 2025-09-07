@@ -28,6 +28,10 @@ namespace SupportApp.Application.Common.Errors
             code: "Auth.User.NotFound",
             description: "User not found.");
 
+        public static readonly Error TicketNotFound = Error.NotFound(
+            code: "Ticket.id.NotFound",
+            description: "Ticket not found.");
+
         public static readonly Error TokenGenerationFailed = Error.Failure(
             code: "Auth.TokenGeneration.Failed",
             description: "Failed to generate new JWT token.");

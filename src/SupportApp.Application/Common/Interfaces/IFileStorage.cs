@@ -1,6 +1,4 @@
-﻿using SupportApp.Application.Features.Categories.Dtos;
-
-namespace SupportApp.Application.Common.Interfaces
+﻿namespace SupportApp.Application.Common.Interfaces
 {
     public interface IFileStorage
     {

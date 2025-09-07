@@ -10,4 +10,10 @@ namespace SupportApp.Application.Features.Categories.Dtos
         public TicketPriority Priority { get; set; }
         public bool IsActive { get; set; }
     }
+
+    public class CategoryMiniDto
+    {
+        public Guid Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+    }
 }

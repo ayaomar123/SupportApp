@@ -2,10 +2,10 @@
 {
     public enum ActivityType
     {
+        Created,
         Comment,
         InternalNote,
         Attachment,
         StatusChanged,
-        Assigned
     }
 }

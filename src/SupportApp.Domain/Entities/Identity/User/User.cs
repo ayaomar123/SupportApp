@@ -23,6 +23,8 @@ namespace SupportApp.Domain.Entities.Identity.User
         private readonly List<Ticket> _tickets = [];
         public IEnumerable<Ticket> Tickets => _tickets.AsReadOnly();
 
+        public ICollection<Ticket> OwnedTickets { get; } = new List<Ticket>();
+        public ICollection<Ticket> AssignedTickets { get; } = new List<Ticket>();
         private User() { } // EF Core
 
         private User(Guid id, string name, string email, string passwordHash, string? phoneNumber, UserType userType)

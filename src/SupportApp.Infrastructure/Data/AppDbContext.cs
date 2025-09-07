@@ -1,4 +1,5 @@
 ﻿using MediatR;
+
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,9 +8,9 @@ using SupportApp.Domain.Common;
 using SupportApp.Domain.Entities.Identity.RefreshToken;
 using SupportApp.Domain.Entities.Identity.User;
 using SupportApp.Domain.Entities.Tickets;
+using SupportApp.Domain.Entities.Tickets.Activities;
 using SupportApp.Domain.Entities.Tickets.Attachments;
 using SupportApp.Domain.Entities.Tickets.Categories;
-using SupportApp.Domain.Entities.Tickets.Notes;
 using SupportApp.Infrastructure.Identity;
 
 namespace SupportApp.Infrastructure.Data
@@ -20,7 +21,7 @@ namespace SupportApp.Infrastructure.Data
         public DbSet<Ticket> Tickets => Set<Ticket>();
         public DbSet<Category> Categories => Set<Category>();
         public DbSet<TicketActivity> TicketActivities => Set<TicketActivity>();
-        public DbSet<ActivityAttachment> ActivityAttachments => Set<ActivityAttachment>();
+        public DbSet<TicketActivityAttachment> TicketActivityAttachments => Set<TicketActivityAttachment>();
 
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
@@ -34,6 +35,17 @@ namespace SupportApp.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.HasSequence<int>("TicketNumbers", schema: "shared")
+                .StartsAt(1000)
+                .IncrementsBy(1);
+
+            builder.Entity<Ticket>(b =>
+            {
+                b.Property(t => t.Number)
+                 .HasDefaultValueSql("NEXT VALUE FOR shared.TicketNumbers");
+            });
+
             builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
 

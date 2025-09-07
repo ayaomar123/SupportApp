@@ -19,16 +19,4 @@ public sealed class NotificationService(ILogger<NotificationService> logger) : I
         // Simulated email send
         await Task.CompletedTask;
     }
-
-    public async Task SendSmsAsync(string phoneNumber, CancellationToken cancellationToken = default)
-    {
-        var masked = phoneNumber.Length >= 4
-            ? new string('*', phoneNumber.Length - 4) + phoneNumber[^4..]
-            : "****";
-
-        logger.LogInformation("[SMS] To: {Phone} | Message: {Message}", masked, Message);
-
-        // Simulated SMS send
-        await Task.CompletedTask;
-    }
 }

@@ -20,9 +20,4 @@
         <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="BackgroundJobs\" />
-      <Folder Include="RealTime\" />
-    </ItemGroup>
-
 </Project>

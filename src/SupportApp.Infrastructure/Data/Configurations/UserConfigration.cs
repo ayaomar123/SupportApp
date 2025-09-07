@@ -32,7 +32,7 @@ namespace SupportApp.Infrastructure.Data.Configurations
             builder.Property(c => c.PasswordHash)
                    .HasMaxLength(150);
 
-            builder.HasMany(c => c.Tickets).WithOne().HasForeignKey(v => v.ClientId);
+            builder.HasMany(c => c.Tickets).WithOne().HasForeignKey(v => v.OwnerId);
 
             builder.Navigation(c => c.Tickets)
            .UsePropertyAccessMode(PropertyAccessMode.Field);

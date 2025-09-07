@@ -1,6 +1,4 @@
-﻿
-
-namespace SupportApp.Domain.Entities.Tickets.Enums
+﻿namespace SupportApp.Domain.Entities.Tickets.Enums
 {
     public enum TicketStatus
     {

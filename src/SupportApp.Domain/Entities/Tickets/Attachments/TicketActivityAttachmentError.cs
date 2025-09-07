@@ -3,7 +3,7 @@ using SupportApp.Domain.Common.Results;
 
 namespace SupportApp.Domain.Entities.Tickets.Attachments
 {
-    public class ActivityAttachmentError
+    public class TicketActivityAttachmentError
     {
         public static Error TicketActivityIdRequired =>
            Error.Validation("ActivityAttachment.TicketActivityId.Required", "ActivityAttachment TicketActivityId is required");

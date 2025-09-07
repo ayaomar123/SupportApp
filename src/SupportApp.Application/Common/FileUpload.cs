@@ -1,4 +1,4 @@
-﻿namespace SupportApp.Application.Features.Categories.Dtos
+﻿namespace SupportApp.Application.Common
 {
     public class FileUpload
     {

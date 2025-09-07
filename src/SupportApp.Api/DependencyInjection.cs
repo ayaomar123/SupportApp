@@ -1,7 +1,9 @@
 ﻿using System.Text.Json.Serialization;
+
 using SupportApp.Api.Infrastructure;
 using SupportApp.Api.Services;
 using SupportApp.Application.Common.Interfaces;
+
 namespace Microsoft.Extensions.DependencyInjection;
 public static class DependencyInjection
 {
