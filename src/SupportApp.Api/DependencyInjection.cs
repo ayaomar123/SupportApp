@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-
+using Microsoft.OpenApi.Models;
 using SupportApp.Api.Infrastructure;
 using SupportApp.Api.Services;
 using SupportApp.Application.Common.Interfaces;
@@ -12,23 +12,11 @@ public static class DependencyInjection
         services.AddCustomProblemDetails()
                 .AddExceptionHandling()
                 .AddControllerWithJsonConfiguration()
+                .AddSwagger()
                 .AddValidation()
                 .AddConfiguredCors(configuration)
                 .AddIdentityInfrastructure()
-                .AddAppOutputCaching()
-                .AddSignalR();
-
-        return services;
-    }
-
-    public static IServiceCollection AddAppOutputCaching(this IServiceCollection services)
-    {
-        services.AddOutputCache(options =>
-        {
-            options.SizeLimit = 100 * 1024 * 1024; // 100 mb
-            options.AddBasePolicy(policy =>
-                policy.Expire(TimeSpan.FromSeconds(60)));
-        });
+                .AddPolicies();
 
         return services;
     }
@@ -71,6 +59,55 @@ public static class DependencyInjection
         return services;
     }
 
+    public static IServiceCollection AddPolicies(this IServiceCollection services)
+    {
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("EmployeeOnly", policy =>
+                policy.RequireClaim("userType", "Employee"));
+
+            options.AddPolicy("ClientOnly", policy =>
+                policy.RequireClaim("userType", "Client"));
+        });
+        return services;
+    }
+
+    public static IServiceCollection AddSwagger(this IServiceCollection services)
+    {
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "SupportApp API",
+                Version = "v1"
+            });
+
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+            });
+
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+                    });
+        return services;
+    }
     public static IServiceCollection AddConfiguredCors(this IServiceCollection services, IConfiguration configuration)
     {
         var origins = configuration
@@ -79,7 +116,7 @@ public static class DependencyInjection
 
         services.AddCors(options =>
         {
-            options.AddPolicy("employee", policy =>
+            options.AddPolicy("support-app", policy =>
             {
                 policy
                     .WithOrigins(origins)
@@ -99,13 +136,11 @@ public static class DependencyInjection
 
         app.UseHttpsRedirection();
 
-        app.UseCors("employee");
+        app.UseCors("support-app");
 
         app.UseAuthentication();
 
         app.UseAuthorization();
-
-        app.UseOutputCache();
 
         app.UseStaticFiles();
 

@@ -60,20 +60,5 @@ namespace SupportApp.Api.Controllers
 
             return result.Match(response => Ok(response), Problem);
         }
-
-        [HttpGet("employee-data")]
-        [Authorize(Policy = "EmployeeOnly")]
-        public IActionResult GetEmployeeData()
-        {
-            return Ok("This is employee-only data.");
-        }
-
-        [HttpGet("client-data")]
-        [Authorize(Policy = "ClientOnly")]
-        public IActionResult GetCustomerData()
-        {
-            return Ok("This is Client-only data.");
-        }
-
     }
 }

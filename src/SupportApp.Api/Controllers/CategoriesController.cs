@@ -1,9 +1,6 @@
 ﻿using MediatR;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OutputCaching;
-
 using SupportApp.Api.Requests.Categories;
 using SupportApp.Application.Common;
 using SupportApp.Application.Features.Categories.Commands.CreateCategory;
@@ -16,8 +13,9 @@ using SupportApp.Application.Features.Categories.Queries.GetCategories;
 namespace SupportApp.Api.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(Policy = "EmployeeOnly")]
     [ApiController]
+    [Authorize]
+
     public class CategoriesController(ISender sender) : ApiController
     {
         [HttpGet(Name = "GetCategories")]
@@ -26,16 +24,14 @@ namespace SupportApp.Api.Controllers
         [EndpointSummary("Retrieves a list of Categories.")]
         [EndpointDescription("Returns all Categories")]
         [ProducesDefaultResponseType]
-        [OutputCache(Duration = 60)]
         public async Task<IActionResult> Get(CancellationToken ct)
         {
             var result = await sender.Send(new GetCategoriesQuery(), ct);
 
-            return result.Match(
-                response => Ok(response),
-                Problem);
+            return result.Match(response => Ok(response), Problem);
         }
 
+        [Authorize(Policy = "EmployeeOnly")]
         [HttpPost(Name = "CreateCategory")]
         [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -65,6 +61,7 @@ namespace SupportApp.Api.Controllers
                 Problem);
         }
 
+        [Authorize(Policy = "EmployeeOnly")]
         [HttpPut("{categoryId:guid}", Name = "UpdateCategory")]
         [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -96,6 +93,7 @@ namespace SupportApp.Api.Controllers
             return result.Match(response => Ok(response), Problem);
         }
 
+        [Authorize(Policy = "EmployeeOnly")]
         [HttpPut("status/{categoryId:guid}", Name = "UpdateCategoryStatus")]
         [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -112,6 +110,7 @@ namespace SupportApp.Api.Controllers
             return result.Match(_ => NoContent(), Problem);
         }
 
+        [Authorize(Policy = "EmployeeOnly")]
         [HttpDelete("{categoryId:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -14,6 +13,7 @@ using SupportApp.Application.Common.Interfaces;
 using SupportApp.Infrastructure.Data;
 using SupportApp.Infrastructure.Data.Interceptors;
 using SupportApp.Infrastructure.Identity;
+using SupportApp.Infrastructure.Pdf;
 using SupportApp.Infrastructure.Services;
 
 namespace SupportApp.Infrastructure
@@ -91,11 +91,7 @@ namespace SupportApp.Infrastructure
 
             services.AddTransient<IPasswordHasher, PasswordHasher>();
 
-            services.AddHybridCache(options => options.DefaultEntryOptions = new HybridCacheEntryOptions
-            {
-                Expiration = TimeSpan.FromMinutes(10),
-                LocalCacheExpiration = TimeSpan.FromSeconds(30),
-            });
+            services.AddScoped<IPdfRenderer, TicketPdfRenderer>();
 
             services.AddScoped<ITokenProvider, TokenProvider>();
             services.AddScoped<INotificationService, NotificationService>();

@@ -1,11 +1,11 @@
 ﻿using MediatR;
-
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 using SupportApp.Api.Requests.Tickets;
 using SupportApp.Application.Common;
 using SupportApp.Application.Features.Tickets.Commands.CreateTicket;
 using SupportApp.Application.Features.Tickets.Commands.CreateTicketActivity;
+using SupportApp.Application.Features.Tickets.Queries.ExportTicketPdf;
 using SupportApp.Application.Features.Tickets.Queries.GetTickets;
 using SupportApp.Application.Features.Tickets.Queries.GetTicketsById;
 using SupportApp.Domain.Common.Results;
@@ -15,7 +15,7 @@ namespace SupportApp.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class TicketsController(ISender sender) : ApiController
     {
         [HttpGet(Name = "GetTickets")]
@@ -43,6 +43,7 @@ namespace SupportApp.Api.Controllers
                 response => Ok(response),
                 Problem);
         }
+
 
         [HttpPost("{ticketId:guid}", Name = "CreateTicketActivity")]
         [Consumes("multipart/form-data")]
@@ -86,6 +87,16 @@ namespace SupportApp.Api.Controllers
             }
 
             return result.Match(response => Ok(response), Problem);
+        }
+
+
+        [HttpGet("{id:guid}/pdf")]
+        public async Task<IActionResult> GetTicketPdf([FromRoute] Guid id, CancellationToken ct)
+        {
+            var result = await sender.Send(new ExportTicketPdfQuery(id), ct);
+            return result.Match(
+                response => File(response.Bytes, response.ContentType, response.FileName),
+                Problem);
         }
     }
 }
